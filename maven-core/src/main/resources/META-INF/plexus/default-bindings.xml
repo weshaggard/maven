@@ -82,7 +82,7 @@ Mappings to default lifecycle, specific for each packaging.
                 org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M3:test
               </test>
               <package>
-                org.apache.maven.plugins:maven-jar-plugin:2.4:jar
+                org.apache.maven.plugins:maven-jar-plugin:3.1.2:jar
               </package>
               <install>
                 org.apache.maven.plugins:maven-install-plugin:2.4:install
