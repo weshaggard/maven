@@ -176,8 +176,9 @@ Mappings to default lifecycle, specific for each packaging.
                 org.apache.maven.plugins:maven-jar-plugin:2.4:jar,
                 org.apache.maven.plugins:maven-plugin-plugin:3.2:addPluginArtifactMetadata
               </package>
+              <!-- MNG-6556: Do not upgrade to 3.0.0-M1 is does not install the plugin prefix metadata -->
               <install>
-                org.apache.maven.plugins:maven-install-plugin:2.4:install
+                org.apache.maven.plugins:maven-install-plugin:2.5.2:install
               </install>
               <!-- MNG-6556: Do not upgrade to 3.0.0-M1 is does not deploy the plugin prefix metadata -->
               <deploy>
