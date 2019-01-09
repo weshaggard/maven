@@ -179,8 +179,9 @@ Mappings to default lifecycle, specific for each packaging.
               <install>
                 org.apache.maven.plugins:maven-install-plugin:2.4:install
               </install>
+              <!-- MNG-6556: Do not upgrade to 3.0.0-M1 is does not deploy the plugin prefix metadata -->
               <deploy>
-                org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy
+                org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy
               </deploy>
             </phases>
             <!-- END SNIPPET: maven-plugin-lifecycle -->
