@@ -104,11 +104,15 @@ for (String os in runITsOses) {
                               // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
                               cmd = "${cmd} -Dhttps.protocols=TLSv1.2"
                             }
-                            
+
+                            try {
                             if (isUnix()) {
                                 sh "${cmd}"
                             } else {
                                 bat "${cmd}"
+                            }
+                            } finally {
+                                zip(zipFile: "core-it-suite--${stageId}.zip", dir: 'core-it-suite', archive: true)
                             }
                         }
                         deleteDir() // clean up after ourselves to reduce disk space
