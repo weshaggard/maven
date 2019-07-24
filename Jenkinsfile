@@ -23,7 +23,7 @@ def buildOs = 'linux'
 def buildJdk = '8'
 def buildMvn = '3.6.0'
 def runITsOses = ['linux']
-def runITsJdks = ['7']
+def runITsJdks = ['7', '8']
 def runITsMvn = '3.6.0'
 def runITscommand = "mvn clean install -Prun-its,embedded -B -U -V" // -DmavenDistro=... -Dmaven.test.failure.ignore=true
 def tests
