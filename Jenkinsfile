@@ -161,6 +161,6 @@ parallel(runITsTasks)
 } finally {
     // notify completion
     stage("Notifications") {
-        jenkinsNotify()      
+        //jenkinsNotify()
     }    
 }
