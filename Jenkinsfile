@@ -97,30 +97,34 @@ for (String os in runITsOses) {
                             bat "if exist apache-maven-dist.zip del /q apache-maven-dist.zip"
                         }
                         unstash 'dist'
+                        try {
+                            // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
+                            // using non-empty MAVEN_OPTS (dummy prop) to prevent from merging env vars in child IT with env vars from parent process
+                            // child env var takes the precedence
+                            // merging env vars between parent/child processes are performed in maven-shared-utils:
+                            // see Commandline#addSystemEnvironment(): "Properties systemEnvVars = CommandLineUtils.getSystemEnvVars()"
+                            def platformOptions = jdk == '7' ? '-Dhttps.protocols=TLSv1.2' : '-DdummyProp=dummy'
 
-                        // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
-                        // using non-empty MAVEN_OPTS (dummy prop) to prevent from merging env vars in child IT with env vars from parent process
-                        // child env var takes the precedence
-                        // merging env vars between parent/child processes are performed in maven-shared-utils:
-                        // see Commandline#addSystemEnvironment(): "Properties systemEnvVars = CommandLineUtils.getSystemEnvVars()"
-                        def platformOptions = jdk == '7' ? '-Dhttps.protocols=TLSv1.2' : '-DdummyProp=dummy'
-
-                        withMaven(jdk: jdkName, maven: mvnName, mavenOpts: platformOptions, mavenLocalRepo:"${WORK_DIR}/it-local-repo", options:[
-                            junitPublisher(ignoreAttachments: false)
-                        ]) {
-                            String cmd = "${runITscommand} -DmavenDistro=$WORK_DIR/apache-maven-dist.zip -Dmaven.test.failure.ignore=true -Dmaven.skip.rc=true"
-                            if (stageId.endsWith('-jdk7')) {
-                              // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
-                              cmd = "${cmd} -Dhttps.protocols=TLSv1.2"
-                            }
+                            withMaven(jdk: jdkName, maven: mvnName, mavenOpts: platformOptions, mavenLocalRepo:"${WORK_DIR}/it-local-repo", options:[
+                                junitPublisher(ignoreAttachments: false)
+                            ]) {
+                                String cmd = "${runITscommand} -DmavenDistro=$WORK_DIR/apache-maven-dist.zip -Dmaven.test.failure.ignore=true -Dmaven.skip.rc=true"
+                                if (stageId.endsWith('-jdk7')) {
+                                  // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
+                                  cmd = "${cmd} -Dhttps.protocols=TLSv1.2"
+                                }
                             
-                            if (isUnix()) {
-                                sh "${cmd}"
-                            } else {
-                                bat "${cmd}"
+                                if (isUnix()) {
+                                    sh "${cmd}"
+                                } else {
+                                    bat "${cmd}"
+                                }
                             }
+                        } finally {
+                            archiveDirs(stageId, ['core-it-suite-logs':'core-it-suite/target/test-classes',
+                                                  'core-it-suite-reports':'core-it-suite/target/surefire-reports'])
+                            deleteDir() // clean up after ourselves to reduce disk space
                         }
-                        deleteDir() // clean up after ourselves to reduce disk space
                     }
                 }
             }
