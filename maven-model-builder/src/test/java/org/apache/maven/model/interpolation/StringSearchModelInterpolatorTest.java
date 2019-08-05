@@ -33,6 +33,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 /**
  * @author jdcasey
  * @author Benjamin Bentmann
@@ -335,6 +339,37 @@ public class StringSearchModelInterpolatorTest
         assertEquals( "value2", ( (String[]) obj.values.get( "key" ) )[1] );
         assertEquals( "value3", ( (String[]) obj.values.get( "key2" ) )[0] );
         assertEquals( "value4", ( (String[]) obj.values.get( "key2" ) )[1] );
+    }
+
+    public void testInterpolateObjectWithFile()
+            throws Exception
+    {
+        Model model = new Model();
+        model.setPomFile( new File( System.getProperty( "user.dir" ), "pom.xml" ) );
+        File baseDir = model.getProjectDirectory();
+
+        Properties p = new Properties();
+
+        Map<String, String> values = new HashMap<>();
+        values.put( "key", "${project.basedir}" + File.separator + "target" );
+
+        ObjectWithMapField obj = new ObjectWithMapField( values );
+
+        StringSearchModelInterpolator interpolator = (StringSearchModelInterpolator) createInterpolator();
+
+        ModelBuildingRequest config = createModelBuildingRequest( p );
+
+        SimpleProblemCollector collector = new SimpleProblemCollector();
+        interpolator.interpolateObject( obj, model, new File( "." ), config, collector );
+        assertProblemFree( collector );
+
+        assertThat( baseDir.getCanonicalPath(), is( System.getProperty( "user.dir" ) ) );
+        assertThat( obj.values.size(), is( 1 ) );
+        assertThat( (String) obj.values.get( "key" ), is( anyOf(
+                is( System.getProperty( "user.dir" ) + File.separator + "target" ),
+                // TODO why MVN adds dot /./ in paths???
+                is( System.getProperty( "user.dir" ) + File.separator + '.' + File.separator + "target" )
+        ) ) );
     }
 
 
