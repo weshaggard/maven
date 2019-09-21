@@ -184,10 +184,41 @@ under the License.
             <configuration>
               <descriptors>
                 <descriptor>src/main/assembly/bin.xml</descriptor>
+                <descriptor>src/main/assembly/src.xml</descriptor>
               </descriptors>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>net.nicoulaj.maven.plugins</groupId>
+        <artifactId>checksum-maven-plugin</artifactId>
+        <version>1.8</version>
+        <executions>
+          <execution>
+            <id>source-release-checksum</id>
+            <goals>
+              <goal>files</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <algorithms>
+            <algorithm>SHA-512</algorithm>
+          </algorithms>
+          <fileSets>
+            <fileSet>
+              <directory>${project.build.directory}</directory>
+              <includes>
+                <include>${project.artifactId}-${project.version}-bin.zip</include>
+                <include>${project.artifactId}-${project.version}-bin.tar.gz</include>
+                <include>${project.artifactId}-${project.version}-src.zip</include>
+                <include>${project.artifactId}-${project.version}-src.tar.gz</include>
+              </includes>
+            </fileSet>
+          </fileSets>
+          <failIfNoFiles>true</failIfNoFiles>
+        </configuration>
       </plugin>
     </plugins>
   </build>
