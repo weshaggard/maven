@@ -66,7 +66,7 @@ node(jenkinsEnv.nodeSelection(osNode)) {
             }
         }
 
-        tests = resolveScm source: [$class: 'GitSCMSource', credentialsId: '', id: '_', remote: 'https://gitbox.apache.org/repos/asf/maven-integration-testing.git', traits: [[$class: 'jenkins.plugins.git.traits.BranchDiscoveryTrait'], [$class: 'GitToolSCMSourceTrait', gitTool: 'Default']]], targets: [BRANCH_NAME, 'master']
+        tests = resolveScm source: [$class: 'GitSCMSource', credentialsId: '', id: '_', remote: 'https://gitbox.apache.org/repos/asf/maven.git', traits: [[$class: 'jenkins.plugins.git.traits.BranchDiscoveryTrait'], [$class: 'GitToolSCMSourceTrait', gitTool: 'Default']]], targets: [BRANCH_NAME, 'master']
     }
 }
 
@@ -78,48 +78,38 @@ for (String os in runITsOses) {
         String mvnName = jenkinsEnv.mvnFromVersion(os, "${runITsMvn}")
         echo "OS: ${os} JDK: ${jdk} => Label: ${osLabel} JDK: ${jdkName}"
 
+        def cmd = [
+          'mvn',
+          'verify',
+          '-DskipTests', '-Drat.skip'
+        ]
+        if (jdk == '7') {
+          // Java 7u80 has TLS 1.2 disabled by default: need to explicitely enable
+          cmd += '-Dhttps.protocols=TLSv1.2'
+        }
+
         String stageId = "${os}-jdk${jdk}"
-        String stageLabel = "Run ITs ${os.capitalize()} Java ${jdk}"
+        String stageLabel = "Rebuild ${os.capitalize()} Java ${jdk}"
         runITsTasks[stageId] = {
             node(jenkinsEnv.nodeSelection(osLabel)) {
+                def WORK_DIR=pwd()
                 stage("${stageLabel}") {
                     echo "NODE_NAME = ${env.NODE_NAME}"
-                    // on Windows, need a short path or we hit 256 character limit for paths
-                    // using EXECUTOR_NUMBER guarantees that concurrent builds on same agent
-                    // will not trample each other plus workaround for JENKINS-52657
-                    dir(isUnix() ? 'test' : "c:\\mvn-it-${EXECUTOR_NUMBER}.tmp") {
-                        def WORK_DIR=pwd()
-                        checkout tests
-                        if (isUnix()) {
-                            sh "rm -rvf $WORK_DIR/apache-maven-dist.zip $WORK_DIR/it-local-repo"
-                        } else {
-                            bat "if exist it-local-repo rmdir /s /q it-local-repo"
-                            bat "if exist apache-maven-dist.zip del /q apache-maven-dist.zip"
-                        }
-                        unstash 'dist'
-                        try {
-                            withMaven(jdk: jdkName, maven: mvnName, mavenLocalRepo:"${WORK_DIR}/it-local-repo", options:[
-                                junitPublisher(ignoreAttachments: false)
-                            ]) {
-                                String cmd = "${runITscommand} -DmavenDistro=$WORK_DIR/apache-maven-dist.zip -Dmaven.test.failure.ignore=true"
-                                if (stageId.endsWith('-jdk7')) {
-                                    // Java 7u80 has TLS 1.2 disabled by default: need to explicitly enable
-                                    cmd = "${cmd} -Dhttps.protocols=TLSv1.2"
-                                }
-
-                                if (isUnix()) {
-                                    sh 'df -hT'
-                                    sh "${cmd}"
-                                } else {
-                                    bat 'wmic logicaldisk get size,freespace,caption'
-                                    bat "${cmd}"
-                                }
-                            }
-                        } finally {
-                            archiveDirs(stageId, ['core-it-suite-logs':'core-it-suite/target/test-classes',
-                                                  'core-it-suite-reports':'core-it-suite/target/surefire-reports'])
-                            deleteDir() // clean up after ourselves to reduce disk space
-                        }
+                    checkout tests
+                    withMaven(jdk: jdkName, maven: mvnName, mavenLocalRepo:"${WORK_DIR}/.repository", options:[
+                        artifactsPublisher(disabled: false),
+                        junitPublisher(ignoreAttachments: false),
+                        findbugsPublisher(disabled: false),
+                        openTasksPublisher(disabled: false),
+                        dependenciesFingerprintPublisher(),
+                        invokerPublisher(),
+                        pipelineGraphPublisher()
+                    ]) {
+                      if (isUnix()) {
+                        sh cmd.join(' ')
+                      } else {
+                        bat cmd.join(' ')
+                      }
                     }
                 }
             }
