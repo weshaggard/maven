@@ -76,6 +76,7 @@ under the License.
     <maven.site.path>ref/3-LATEST</maven.site.path>
     <checkstyle.violation.ignore>None</checkstyle.violation.ignore>
     <checkstyle.excludes>**/package-info.java</checkstyle.excludes>
+    <buildId>${os.name}-jdk${java.version}</buildId>
   </properties>
 
   <modules>
