@@ -29,6 +29,7 @@ under the License.
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>lib</outputDirectory>
+      <outputFileNameMapping>${artifact.artifactId}-${artifact.version}.${artifact.extension}</outputFileNameMapping>
       <excludes>
         <exclude>org.codehaus.plexus:plexus-classworlds</exclude>
       </excludes>

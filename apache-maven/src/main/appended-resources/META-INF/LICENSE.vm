@@ -22,21 +22,18 @@ Apache Maven includes a number of components and libraries with separate
 copyright notices and license terms. Your use of those components are 
 subject to the terms and conditions of the following licenses: 
 ##
-#set ( $apacheLicenseNames = [ "Apache License, Version 2.0", "The Apache Software License, Version 2.0",
-    "ASLv2", "Apache Public License 2.0", "Apache 2.0" ] )
+#set ( $apacheMavenGroupIds = [ "org.apache.maven", "org.apache.maven.wagon", "org.apache.maven.resolver",
+                                "org.apache.maven.shared" ] )
 #set ( $MITLicenseNames = [ "MIT License", "MIT license", "The MIT License" ] )
 #foreach ( $project in $projects )
 #**##foreach ( $license in $project.licenses)
-#*  *##if ( !$apacheLicenseNames.contains( $license.name ) )
+#*  *##set ( $groupId = $project.artifact.groupId )
+#*  *##if ( !$apacheMavenGroupIds.contains( $groupId ) )
 #*    *##set ( $artId = $project.artifact.artifactId )
 #*    *##set ( $url = $license.url )
 #*    *##set ( $spdx = false )
 #*    *##set ( $includeLicense = true )
 #*    *###
-#*    *##if ( $project.artifact.artifactId == "jcl-over-slf4j" )
-#*      *### jcl-over-slf4j is Apache 2.0, even if its pom says MIT
-#*      *##set ( $includeLicense = false )
-#*    *##end
 #*    *##if ( $license.name == "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0" )
 #*      *##set ( $spdx = 'CDDL-1.0' )
 #*    *##end
