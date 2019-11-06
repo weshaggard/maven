@@ -22,6 +22,7 @@ package org.apache.maven.artifact.versioning;
 import java.util.Locale;
 
 import junit.framework.TestCase;
+import java.util.*;
 
 /**
  * Test ComparableVersion.
@@ -32,7 +33,7 @@ import junit.framework.TestCase;
 public class ComparableVersionTest
     extends TestCase
 {
-    private Comparable newComparable( String version )
+    private ComparableVersion newComparable( String version )
     {
         ComparableVersion ret = new ComparableVersion( version );
         String canonical = ret.getCanonical();
@@ -193,6 +194,208 @@ public class ComparableVersionTest
 
         checkVersionsOrder( "2.0.1", "2.0.1-123" );
         checkVersionsOrder( "2.0.1-xyz", "2.0.1-123" );
+    }
+
+    public void testPeriods()
+    {
+        String[] test = {
+            "1.0.0-alpha", "1.0.0-a",
+            "1.0.0-alpha1", "1.0.0-alpha2", "1.0.0-alpha10",
+            "1.0.0-alpha-1", "1.0.0-alpha-2", "1.0.0-alpha-10",
+            "1.0.0-alpha.1", "1.0.0-alpha.2", "1.0.0-alpha.10",
+            "1.0.0-a-1", "1.0.0-a-2", "1.0.0-a-10",
+            "1.0.0-a.1", "1.0.0-a.2", "1.0.0-a.10",
+            "1.0.0-a1", "1.0.0-a2", "1.0.0-a10",
+            "1.0.0-beta", "1.0.0-b",
+            "1.0.0-beta1", "1.0.0-beta2", "1.0.0-beta10",
+            "1.0.0-beta-1", "1.0.0-beta-2", "1.0.0-beta-10",
+            "1.0.0-beta.1", "1.0.0-beta.2", "1.0.0-beta.10",
+            "1.0.0-b-1", "1.0.0-b-2", "1.0.0-b-10",
+            "1.0.0-b.1", "1.0.0-b.2", "1.0.0-b.10",
+            "1.0.0-b1", "1.0.0-b2", "1.0.0-b10",
+            "1.0.0-milestone", "1.0.0-m",
+            "1.0.0-milestone-1", "1.0.0-milestone-2", "1.0.0-milestone-10",
+            "1.0.0-milestone.1", "1.0.0-milestone.2", "1.0.0-milestone.10",
+            "1.0.0-m1", "1.0.0-m2", "1.0.0-m10",
+            "1.0.0-m-1", "1.0.0-m-2", "1.0.0-m-10",
+            "1.0.0-m.1", "1.0.0-m.2", "1.0.0-m.10",
+            "1.0.0-rc1", "1.0.0-rc2", "1.0.0-rc10",
+            "1.0.0-rc-1", "1.0.0-rc-2", "1.0.0-rc-10",
+            "1.0.0-rc.1", "1.0.0-rc.2", "1.0.0-rc.10",
+            "1.0.0-snapshot",
+            "1.0.0-snapshot1", "1.0.0-snapshot2", "1.0.0-snapshot10",
+            "1.0.0-snapshot-1", "1.0.0-snapshot-2", "1.0.0-snapshot-10",
+            "1.0.0-snapshot.1", "1.0.0-snapshot.2", "1.0.0-snapshot.10",
+            "1.0.0",
+            "1.0.0-ga", "1.0.0-final",
+            "1.0.0-ga1", "1.0.0-ga2", "1.0.0-ga10",
+            "1.0.0-ga-1", "1.0.0-ga-2", "1.0.0-ga-10",
+            "1.0.0-ga.1", "1.0.0-ga.2", "1.0.0-ga.10",
+            "1.0.0-final-1", "1.0.0-final-2", "1.0.0-final-10",
+            "1.0.0-final.1", "1.0.0-final.2", "1.0.0-final.10",
+            "1.0.0-dev", "1.0.0-preview",
+            "1.0.0-dev1", "1.0.0-dev2", "1.0.0-dev10",
+            "1.0.0-dev-1", "1.0.0-dev-2", "1.0.0-dev-10",
+            "1.0.0-dev.1", "1.0.0-dev.2", "1.0.0-dev.10",
+            "1.0.0-dev-20191106.1", "1.0.0-20191106.1",
+            "1.0.0-preview1", "1.0.0-preview2", "1.0.0-preview10",
+            "1.0.0-preview-1", "1.0.0-preview-2", "1.0.0-preview-10",
+            "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.10",
+            "1.0.0-1", "1.0.0-2", "1.0.0-10",
+            "1.0.1",
+            "1.1.0-beta.1", "1.1.0", "1.1.0-dev-1",
+            "2.0.0-beta.1", "2.0.0", "2.0.0-dev-1"
+        };
+
+        ArrayList<ComparableVersion> comparables = new ArrayList<ComparableVersion>();
+        System.out.println("Before Sorting...");
+        for(int i = 0; i < test.length; i++)
+        {
+            ComparableVersion v = new ComparableVersion( test[i] );
+            comparables.add(v);
+            System.out.println(v + " - canonical(" + v.getCanonical() + ")");
+        }
+        System.out.println("----------------");
+
+        Collections.sort(comparables);
+
+        System.out.println("After Sorting...");
+        System.out.println("----------------");
+        for(ComparableVersion v : comparables) {
+            System.out.println(v + " - canonical(" + v.getCanonical() + ")");
+        }
+        System.out.println("----------------");
+
+        /* Output from running above code:
+After Sorting...
+----------------
+1.0.0-alpha - canonical(1-alpha)
+1.0.0-alpha1 - canonical(1-alpha-1)
+1.0.0-alpha-1 - canonical(1-alpha-1)
+1.0.0-a1 - canonical(1-alpha-1)
+1.0.0-alpha2 - canonical(1-alpha-2)
+1.0.0-alpha-2 - canonical(1-alpha-2)
+1.0.0-a2 - canonical(1-alpha-2)
+1.0.0-alpha10 - canonical(1-alpha-10)
+1.0.0-alpha-10 - canonical(1-alpha-10)
+1.0.0-a10 - canonical(1-alpha-10)
+1.0.0-alpha.1 - canonical(1-alpha.1)
+1.0.0-alpha.2 - canonical(1-alpha.2)
+1.0.0-alpha.10 - canonical(1-alpha.10)
+1.0.0-beta - canonical(1-beta)
+1.0.0-beta1 - canonical(1-beta-1)
+1.0.0-beta-1 - canonical(1-beta-1)
+1.0.0-b1 - canonical(1-beta-1)
+1.0.0-beta2 - canonical(1-beta-2)
+1.0.0-beta-2 - canonical(1-beta-2)
+1.0.0-b2 - canonical(1-beta-2)
+1.0.0-beta10 - canonical(1-beta-10)
+1.0.0-beta-10 - canonical(1-beta-10)
+1.0.0-b10 - canonical(1-beta-10)
+1.0.0-beta.1 - canonical(1-beta.1)
+1.0.0-beta.2 - canonical(1-beta.2)
+1.0.0-beta.10 - canonical(1-beta.10)
+1.0.0-milestone - canonical(1-milestone)
+1.0.0-milestone-1 - canonical(1-milestone-1)
+1.0.0-m1 - canonical(1-milestone-1)
+1.0.0-milestone-2 - canonical(1-milestone-2)
+1.0.0-m2 - canonical(1-milestone-2)
+1.0.0-milestone-10 - canonical(1-milestone-10)
+1.0.0-m10 - canonical(1-milestone-10)
+1.0.0-milestone.1 - canonical(1-milestone.1)
+1.0.0-milestone.2 - canonical(1-milestone.2)
+1.0.0-milestone.10 - canonical(1-milestone.10)
+1.0.0-rc1 - canonical(1-rc-1)
+1.0.0-rc-1 - canonical(1-rc-1)
+1.0.0-rc2 - canonical(1-rc-2)
+1.0.0-rc-2 - canonical(1-rc-2)
+1.0.0-rc10 - canonical(1-rc-10)
+1.0.0-rc-10 - canonical(1-rc-10)
+1.0.0-rc.1 - canonical(1-rc.1)
+1.0.0-rc.2 - canonical(1-rc.2)
+1.0.0-rc.10 - canonical(1-rc.10)
+1.0.0-snapshot - canonical(1-snapshot)
+1.0.0-snapshot1 - canonical(1-snapshot-1)
+1.0.0-snapshot-1 - canonical(1-snapshot-1)
+1.0.0-snapshot2 - canonical(1-snapshot-2)
+1.0.0-snapshot-2 - canonical(1-snapshot-2)
+1.0.0-snapshot10 - canonical(1-snapshot-10)
+1.0.0-snapshot-10 - canonical(1-snapshot-10)
+1.0.0-snapshot.1 - canonical(1-snapshot.1)
+1.0.0-snapshot.2 - canonical(1-snapshot.2)
+1.0.0-snapshot.10 - canonical(1-snapshot.10)
+1.0.0 - canonical(1)
+1.0.0-ga - canonical(1)
+1.0.0-final - canonical(1)
+1.0.0-ga.1 - canonical(1-1)
+1.0.0-final.1 - canonical(1-1)
+1.0.0-ga.2 - canonical(1-2)
+1.0.0-final.2 - canonical(1-2)
+1.0.0-ga.10 - canonical(1-10)
+1.0.0-final.10 - canonical(1-10)
+1.0.0-a - canonical(1-a)
+1.0.0-a-1 - canonical(1-a-1)
+1.0.0-a-2 - canonical(1-a-2)
+1.0.0-a-10 - canonical(1-a-10)
+1.0.0-a.1 - canonical(1-a.1)
+1.0.0-a.2 - canonical(1-a.2)
+1.0.0-a.10 - canonical(1-a.10)
+1.0.0-b - canonical(1-b)
+1.0.0-b-1 - canonical(1-b-1)
+1.0.0-b-2 - canonical(1-b-2)
+1.0.0-b-10 - canonical(1-b-10)
+1.0.0-b.1 - canonical(1-b.1)
+1.0.0-b.2 - canonical(1-b.2)
+1.0.0-b.10 - canonical(1-b.10)
+1.0.0-dev - canonical(1-dev)
+1.0.0-dev1 - canonical(1-dev-1)
+1.0.0-dev-1 - canonical(1-dev-1)
+1.0.0-dev2 - canonical(1-dev-2)
+1.0.0-dev-2 - canonical(1-dev-2)
+1.0.0-dev10 - canonical(1-dev-10)
+1.0.0-dev-10 - canonical(1-dev-10)
+1.0.0-dev-20191106.1 - canonical(1-dev-20191106.1)
+1.0.0-dev.1 - canonical(1-dev.1)
+1.0.0-dev.2 - canonical(1-dev.2)
+1.0.0-dev.10 - canonical(1-dev.10)
+1.0.0-m - canonical(1-m)
+1.0.0-m-1 - canonical(1-m-1)
+1.0.0-m-2 - canonical(1-m-2)
+1.0.0-m-10 - canonical(1-m-10)
+1.0.0-m.1 - canonical(1-m.1)
+1.0.0-m.2 - canonical(1-m.2)
+1.0.0-m.10 - canonical(1-m.10)
+1.0.0-preview - canonical(1-preview)
+1.0.0-preview1 - canonical(1-preview-1)
+1.0.0-preview-1 - canonical(1-preview-1)
+1.0.0-preview2 - canonical(1-preview-2)
+1.0.0-preview-2 - canonical(1-preview-2)
+1.0.0-preview10 - canonical(1-preview-10)
+1.0.0-preview-10 - canonical(1-preview-10)
+1.0.0-preview.1 - canonical(1-preview.1)
+1.0.0-preview.2 - canonical(1-preview.2)
+1.0.0-preview.10 - canonical(1-preview.10)
+1.0.0-ga1 - canonical(1-1)
+1.0.0-ga-1 - canonical(1-1)
+1.0.0-final-1 - canonical(1-1)
+1.0.0-ga2 - canonical(1-2)
+1.0.0-ga-2 - canonical(1-2)
+1.0.0-final-2 - canonical(1-2)
+1.0.0-ga10 - canonical(1-10)
+1.0.0-ga-10 - canonical(1-10)
+1.0.0-final-10 - canonical(1-10)
+1.0.0-1 - canonical(1-1)
+1.0.0-2 - canonical(1-2)
+1.0.0-10 - canonical(1-10)
+1.0.0-20191106.1 - canonical(1-20191106.1)
+1.0.1 - canonical(1.0.1)
+1.1.0-beta.1 - canonical(1.1-beta.1)
+1.1.0 - canonical(1.1)
+1.1.0-dev-1 - canonical(1.1-dev-1)
+2.0.0-beta.1 - canonical(2-beta.1)
+2.0.0 - canonical(2)
+2.0.0-dev-1 - canonical(2-dev-1)
+        */
     }
 
     /**

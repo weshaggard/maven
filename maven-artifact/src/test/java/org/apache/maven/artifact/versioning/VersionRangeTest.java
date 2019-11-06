@@ -146,12 +146,23 @@ public class VersionRangeTest
 
         range = VersionRange.createFromVersionSpec( "[1.0,)" );
         assertFalse( range.containsVersion( new DefaultArtifactVersion( "1.0-SNAPSHOT" ) ) );
+        assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.0-dev-1" ) ) );
+        assertFalse( range.containsVersion( new DefaultArtifactVersion( "1.0-beta.1" ) ) );
 
         range = VersionRange.createFromVersionSpec( "[1.0,1.1-SNAPSHOT]" );
         assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.1-SNAPSHOT" ) ) );
+        assertFalse( range.containsVersion( new DefaultArtifactVersion( "1.1" ) ) );
 
         range = VersionRange.createFromVersionSpec( "[5.0.9.0,5.0.10.0)" );
         assertTrue( range.containsVersion( new DefaultArtifactVersion( "5.0.9.0" ) ) );
+
+        range = VersionRange.createFromVersionSpec( "[1.0, 2.0]" );
+        assertFalse( range.containsVersion( new DefaultArtifactVersion( "1.0-beta-1" ) ) );
+        assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.0" ) ) );
+        assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.0-dev.1" ) ) );
+        assertTrue( range.containsVersion( new DefaultArtifactVersion( "2.0-beta-1" ) ) );
+        assertTrue( range.containsVersion( new DefaultArtifactVersion( "2.0" ) ) );
+        assertFalse( range.containsVersion( new DefaultArtifactVersion( "2.0-dev.1" ) ) );
     }
 
     public void testInvalidRanges()
